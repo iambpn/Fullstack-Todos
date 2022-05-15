@@ -9,3 +9,8 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/*Tailwind support*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
