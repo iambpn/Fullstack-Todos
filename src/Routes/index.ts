@@ -1,7 +1,13 @@
-import { Express, Request, Response } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
+import auth_router from './auth';
 
-export function routes(app: Express): void {
-  app.get('/', (req: Request, res: Response) => {
-    res.json({ data: 'success' });
-  });
-}
+const routes = Router();
+
+const attachUser = (req: Request, res: Response, next: NextFunction) => {
+  next();
+};
+
+routes.use(attachUser);
+routes.use(auth_router);
+
+export default routes;
