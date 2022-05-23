@@ -3,23 +3,31 @@ import PubicHTTP from '../axios';
 import { useRouter } from 'next/router';
 
 type IAuthContext = {
+  authState: IAuthState;
   isAuthenticated: () => boolean;
-  getNewAccessToken: (username: string, password: string) => void;
+  refreshAccessToken: (username: string, password: string) => void;
   logout: () => void;
   getAccessToken: () => string | undefined;
   getNewTokenForRequest: (failedRequest: any) => Promise<any>;
+  setAuthInfo: (authState: IAuthState) => void;
 };
 type IAuthProviderProps = { children: React.ReactNode };
 type IAuthState = {
   token?: string;
   expiresAt?: string;
-  userInfo?: object;
+  userInfo?: IUser;
+};
+
+type IUser = {
+  username: string;
 };
 
 export const AuthContext = createContext<IAuthContext>({
+  authState: {},
+  setAuthInfo: () => {},
   getNewTokenForRequest: async () => {},
   getAccessToken: () => undefined,
-  getNewAccessToken(username: string, password: string): void {},
+  refreshAccessToken(): void {},
   isAuthenticated: () => false,
   logout(): void {},
 });
@@ -63,7 +71,7 @@ export function AuthProvider({ children }: IAuthProviderProps): JSX.Element {
     }
   };
 
-  const getNewAccessToken = async () => {
+  const refreshAccessToken = async () => {
     try {
       const { data } = await publicFetch.get('/token/refresh');
       setAuthState(Object.assign({}, authState, { token: data.token }));
@@ -93,11 +101,13 @@ export function AuthProvider({ children }: IAuthProviderProps): JSX.Element {
   };
 
   const context: IAuthContext = {
+    authState,
     isAuthenticated,
-    getNewAccessToken,
+    refreshAccessToken,
     logout,
     getAccessToken,
     getNewTokenForRequest,
+    setAuthInfo,
   };
 
   return (

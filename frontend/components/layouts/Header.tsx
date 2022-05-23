@@ -1,15 +1,23 @@
 import { useContext } from 'react';
 import { AuthContext } from '../../store/AuthContext';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function Header(): JSX.Element {
   const auth = useContext(AuthContext);
   const router = useRouter();
   return (
     <>
-      <div className={'border-0 border-b border-solid'}>
+      <div className={'border-0 border-b border-solid border-white'}>
         <div className={'py-4 flex justify-between items-center'}>
-          <span className={'text-3xl text-green-500'}>Todos</span>
+          <Link href={'/'}>
+            <a className={'no-underline'}>
+              <span className={'text-3xl text-green-500'}>Todos</span>
+            </a>
+          </Link>
+          {auth.isAuthenticated() && (
+            <span>Hi, {auth.authState?.userInfo?.username}</span>
+          )}
           <div>
             {!auth.isAuthenticated() && (
               <button
