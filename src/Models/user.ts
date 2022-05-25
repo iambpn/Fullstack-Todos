@@ -2,6 +2,10 @@ import mongoose, { Model } from 'mongoose';
 import bcrypt from 'bcrypt';
 
 export interface IUser {
+  activity: {
+    last_login: Date;
+    last_update: Date;
+  };
   name: string;
   email: string;
   phone_number: number;
@@ -15,6 +19,10 @@ export interface InstanceMethods {
 export interface UserModel extends Model<IUser, {}, InstanceMethods> {}
 
 const userSchema = new mongoose.Schema<IUser, UserModel, InstanceMethods>({
+  activity: {
+    last_login: { type: Date, default: new Date() },
+    last_update: { type: Date, default: new Date() },
+  },
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, index: true },
   phone_number: { type: Number, required: true, unique: true, index: true },
@@ -34,6 +42,8 @@ userSchema.pre('save', async function (next) {
   } catch (e: any) {
     console.log('Error while hashing Password.');
     console.log(e);
+  } finally {
+    this.activity.last_update = new Date();
   }
 });
 

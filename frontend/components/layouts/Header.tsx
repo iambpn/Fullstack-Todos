@@ -1,11 +1,9 @@
 import { useContext } from 'react';
 import { AuthContext } from '../../store/AuthContext';
-import { useRouter } from 'next/router';
 import Link from 'next/link';
 
 export default function Header(): JSX.Element {
   const auth = useContext(AuthContext);
-  const router = useRouter();
   return (
     <>
       <div className={'border-0 border-b border-solid border-white'}>
@@ -16,18 +14,21 @@ export default function Header(): JSX.Element {
             </a>
           </Link>
           {auth.isAuthenticated() && (
-            <span>Hi, {auth.authState?.userInfo?.username}</span>
+            <span className={'text-[18px]'}>
+              Hi, {auth.authState?.userInfo?.name}
+            </span>
           )}
           <div>
             {!auth.isAuthenticated() && (
-              <button
-                className={
-                  'rounded px-4 py-2 bg-green-400 border-green-400 text-white'
-                }
-                onClick={async () => await router.push('/login')}
-              >
-                Login
-              </button>
+              <Link href={'/login'}>
+                <button
+                  className={
+                    'rounded px-4 py-2 bg-green-400 border-green-400 text-white'
+                  }
+                >
+                  Login
+                </button>
+              </Link>
             )}
             {auth.isAuthenticated() && (
               <button

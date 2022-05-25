@@ -1,5 +1,5 @@
 import * as dotEnv from 'dotenv';
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import routes from './src/Routes';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -31,6 +31,30 @@ async function connect() {
   SeedInit();
 
   app.use('/api', routes);
+
+  app.use('*', (req: any, res: any, next: NextFunction) => {
+    next('404. Route not found.');
+  });
+
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    if (req.xhr) {
+      return res.status(err.status || 500).json({
+        error: {
+          type: 'server',
+          msg: err.message || err || 'Something went wrong.',
+        },
+      });
+    } else {
+      res.set('Content-Type', 'text/html');
+      return res
+        .status(err.status || 500)
+        .send(
+          `<h1 style='text-align: center'>${
+            err.message || err || 'Something went wrong.'
+          }</h1>`
+        );
+    }
+  });
 
   app.listen(8080, () => {
     console.log('Listening on port: 8080');

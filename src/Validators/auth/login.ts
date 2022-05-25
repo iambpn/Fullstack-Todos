@@ -8,6 +8,9 @@ const loginValidator = checkSchema({
       errorMessage: 'Username is empty.',
       options: { ignore_whitespace: true },
     },
+    isEmail: {
+      errorMessage: 'Username must be a valid email',
+    },
   },
   password: {
     in: ['body'],

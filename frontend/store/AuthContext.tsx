@@ -18,8 +18,15 @@ type IAuthState = {
   userInfo?: IUser;
 };
 
-type IUser = {
-  username: string;
+export type IUser = {
+  activity: {
+    last_login: Date;
+    last_update: Date;
+  };
+  _id: string;
+  name: string;
+  email: string;
+  phone_number: number;
 };
 
 export const AuthContext = createContext<IAuthContext>({

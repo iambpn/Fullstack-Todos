@@ -1,37 +1,77 @@
 import { useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FetchContext } from '../../store/FetchContext';
-import { SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { AuthContext, IUser } from '../../store/AuthContext';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import ReqErrorResolver from '../hooks/ReqErrorResolver';
 
-type IFormData = {
-  username: string;
-  password: string;
+type LoginResponse = {
+  expiresAt: number;
+  msg: string;
+  token: string;
+  userInfo: IUser;
 };
+
+// schema validation
+const schema = yup.object({
+  username: yup
+    .string()
+    .email('Username must be a valid email.')
+    .required('Username is required'),
+  password: yup
+    .string()
+    .min(8, 'Password length must be greater than 8.')
+    .required('Password is required'),
+});
+
+type IFormData = yup.InferType<typeof schema>;
 
 export default function LoginForm(): JSX.Element {
   const fetch = useContext(FetchContext);
+  const auth = useContext(AuthContext);
+  const { resolver: errResolver } = ReqErrorResolver();
+  const [serverErr, setServerErr] = useState('');
+
+  useEffect(() => {
+    if (serverErr !== '') {
+      setTimeout(() => {
+        setServerErr('');
+      }, 8000);
+    }
+  }, [serverErr]);
+
   const {
     handleSubmit,
     register,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     setError,
   } = useForm<IFormData>({
     mode: 'all',
+    resolver: yupResolver(schema),
   });
 
   const onSubmitHandler: SubmitHandler<IFormData> = async (data) => {
     try {
-      let res = await fetch?.authAxios.post('/login', {
+      let res = await fetch?.authAxios.post<LoginResponse>('/login', {
         username: data.username,
         password: data.password,
       });
-      console.log(res);
+
+      auth.setAuthInfo({
+        userInfo: res?.data.userInfo,
+        expiresAt: String(res?.data.expiresAt) || undefined,
+        token: res?.data.token,
+      });
     } catch (e: any) {
-      let errors = e.response.data.errors;
-      for (let name of Object.keys(errors)) {
-        if (name === 'username' || name === 'password') {
-          setError(name, { message: errors[name].msg }, { shouldFocus: true });
-        }
+      let errors = errResolver(e, ['username', 'passwords']);
+      if (errors.type === 'client') {
+        errors.error.forEach(({ name, msg }) => {
+          setError(name as any, { message: msg }, { shouldFocus: true });
+        });
+      } else {
+        setServerErr(errors.error);
       }
     }
   };
@@ -47,17 +87,20 @@ export default function LoginForm(): JSX.Element {
         onSubmit={handleSubmit(onSubmitHandler)}
         autoComplete={'off'}
       >
+        {serverErr !== '' && (
+          <span className={'text-[16px] text-center text-red-500 block mb-3'}>
+            {serverErr}
+          </span>
+        )}
         <div className={'mb-4 flex flex-col'}>
           <label htmlFor='username' className={'mb-1'}>
             Username:
           </label>
           <input
-            type='text'
+            type='email'
             id={'username'}
             className={'h-[30px] text-[14px] px-2'}
-            {...register('username', {
-              required: 'Username is required',
-            })}
+            {...register('username')}
           />
           <span className={'text-[12px] text-right text-red-500'}>
             {errors.username?.message}
@@ -71,13 +114,7 @@ export default function LoginForm(): JSX.Element {
             type='password'
             id={'password'}
             className={'h-[30px] text-[14px] px-2'}
-            {...register('password', {
-              required: 'Password is required',
-              minLength: {
-                message: 'Password must be greater than 8',
-                value: 8,
-              },
-            })}
+            {...register('password')}
           />
           <span className={'text-[12px] text-right text-red-500'}>
             {errors.password?.message}
@@ -90,6 +127,7 @@ export default function LoginForm(): JSX.Element {
             className={
               'w-full rounded h-[35px] bg-green-400 border-green-400 text-[16px] text-white mb-2'
             }
+            disabled={isSubmitting}
           />
           <Link href={'/register'}>
             <input

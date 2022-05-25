@@ -1,4 +1,5 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import { IUser } from './user';
 
 export async function initialize_DB() {
   try {
@@ -13,3 +14,5 @@ export async function initialize_DB() {
     console.log(e.message);
   }
 }
+
+export type ID_Wrapper<t> = t & { _id: Types.ObjectId };
