@@ -21,7 +21,7 @@ const schema = yup.object({
   password: yup
     .string()
     .min(8, 'Password length must be greater than 8.')
-    .required('Password is reuired.'),
+    .required('Password is required.'),
   confirmPassword: yup
     .string()
     .min(8, 'Confirm Password length must be greater than 8.')
@@ -37,6 +37,16 @@ const schema = yup.object({
     .string()
     .length(10, 'Phone number must be of 10 digit.')
     .required('Phone number is required.'),
+  question: yup
+    .string()
+    .min(12, 'Explain your question in more than 12 chars.')
+    .max(200, 'Explain your question in less than 200 chars.')
+    .required('Secret Question is required.'),
+  answer: yup
+    .string()
+    .min(10, 'Explain your answer in more than 10 chars.')
+    .max(200, 'Explain your answer in less than 200 chars.')
+    .required('Secret Answer is required.'),
 });
 
 type IRegisterFrom = yup.InferType<typeof schema>;
@@ -73,6 +83,8 @@ export default function RegisterForm(): JSX.Element {
         confirm_password: data.confirmPassword,
         username: data.username,
         phone_number: data.phoneNumber,
+        question: data.question,
+        answer: data.answer,
       });
       await router.push('/login');
     } catch (e) {
@@ -177,6 +189,34 @@ export default function RegisterForm(): JSX.Element {
               {errors.confirmPassword?.message}
             </span>
           </div>
+        </div>
+        <div className={'mb-4 flex flex-col'}>
+          <label htmlFor='question' className={'mb-1'}>
+            Secret Question:
+          </label>
+          <input
+            type='text'
+            id={'question'}
+            className={'h-[30px] text-[14px] px-2'}
+            {...register('question')}
+          />
+          <span className={'text-[12px] text-right text-red-500'}>
+            {errors.question?.message}
+          </span>
+        </div>
+        <div className={'mb-4 flex flex-col'}>
+          <label htmlFor='answer' className={'mb-1'}>
+            Secret Answer:
+          </label>
+          <input
+            type='text'
+            id={'answer'}
+            className={'h-[30px] text-[14px] px-2'}
+            {...register('answer')}
+          />
+          <span className={'text-[12px] text-right text-red-500'}>
+            {errors.answer?.message}
+          </span>
         </div>
         <div className={'mb-4 flex flex-col'}>
           <label htmlFor='number' className={'mb-1'}>

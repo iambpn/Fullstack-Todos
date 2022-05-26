@@ -6,6 +6,8 @@ export default async function seedUser() {
     email: 'admin@gmail.com',
     password: '123@Admin',
     phone_number: 9895612356,
+    secretQuestion: 'Are you admin?',
+    secretAnswer: 'yes i am admin',
   };
 
   let user = await UserModel.findOne({ email: userData.email }).exec();

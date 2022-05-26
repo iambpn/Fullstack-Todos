@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import UserModel, { IUser } from '../Models/user';
 import { createToken, getRefreshToken } from '../Helpers/tokenHelper';
-import { Types } from 'mongoose';
+import { Schema, Types } from 'mongoose';
 import RefreshToken from '../Models/refreshToken';
 import jwtDecode from 'jwt-decode';
 import { ID_Wrapper } from '../Models/init';
@@ -63,7 +63,12 @@ async function authenticate(req: Request, res: Response) {
       msg: 'success',
       token,
       expiresAt: decodeToken.exp,
-      userInfo: { ...user.toObject(), password: undefined },
+      userInfo: {
+        ...user.toObject(),
+        password: undefined,
+        secretQuestion: undefined,
+        secretAnswer: undefined,
+      },
     });
   } catch (e) {
     console.log(e);
@@ -80,11 +85,13 @@ async function register(req: Request, res: Response) {
   }
 
   try {
-    let userInfo = {
+    let userInfo: Partial<IUser> = {
       email: req.body.username,
       name: req.body.name,
       password: req.body.password,
       phone_number: req.body.phone_number,
+      secretAnswer: req.body.answer,
+      secretQuestion: req.body.question,
     };
 
     let foundUser = await UserModel.findOne({
@@ -123,4 +130,51 @@ async function register(req: Request, res: Response) {
   }
 }
 
-export { authenticate, register };
+async function getQuestion(req: Request, res: Response) {
+  const key = req.params.key;
+  let foundUser = await UserModel.findOne({
+    $or: [
+      { email: key },
+      { phone_number: isNaN(Number(key)) ? 0 : Number(key) },
+    ],
+  }).exec();
+  if (!foundUser) {
+    return res
+      .status(422)
+      .json({ errors: { type: 'Server', msg: 'User not found.' } });
+  }
+  return res.json({ msg: 'success', secretQuestion: foundUser.secretQuestion });
+}
+
+async function resetPassword(req: Request, res: Response) {
+  const key = req.params.key;
+  const password = req.body.new_password;
+  const answer = req.body.answer;
+  let foundUser = await UserModel.findOne({
+    $or: [
+      { email: key },
+      { phone_number: isNaN(Number(key)) ? 0 : Number(key) },
+    ],
+  }).exec();
+  if (!foundUser) {
+    return res
+      .status(422)
+      .json({ errors: { type: 'Server', msg: 'User not found.' } });
+  }
+
+  if (!(await foundUser.verifyAnswer(answer))) {
+    return res.status(422).json({
+      errors: {
+        type: 'server',
+        msg: 'Incorrect Answer.',
+      },
+    });
+  }
+
+  foundUser.password = password;
+  await foundUser.save();
+
+  return res.json({ msg: 'success' });
+}
+
+export { authenticate, register, getQuestion, resetPassword };

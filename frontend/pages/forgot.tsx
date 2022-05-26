@@ -1,6 +1,6 @@
-import LoginForm from '../components/login';
+import ForgotPasswordForm from '../components/frogot';
 
-export default function Login() {
+export default function forgot(): JSX.Element {
   return (
     <div className={'centerDiv'}>
       <style jsx>{`
@@ -12,8 +12,8 @@ export default function Login() {
           transform: translate(-50%, -50%);
         }
       `}</style>
-      <h2 className={'text-center'}>Login to Todos</h2>
-      <LoginForm />
+      <h2 className={'text-center'}>Forgot Password.</h2>
+      <ForgotPasswordForm />
     </div>
   );
 }

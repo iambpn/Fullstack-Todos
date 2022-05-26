@@ -5,11 +5,11 @@ export default function Register(): JSX.Element {
     <div className={'centerDiv'}>
       <style jsx>{`
         .centerDiv {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          -webkit-transform: translate(-50%, -50%);
-          transform: translate(-50%, -50%);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding-bottom: 40px;
         }
       `}</style>
       <h2 className={'text-center'}>Registration</h2>

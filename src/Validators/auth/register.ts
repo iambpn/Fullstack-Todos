@@ -52,6 +52,22 @@ const registerValidator = checkSchema({
       errorMessage: 'Phone number must be a number',
     },
   },
+  question: {
+    in: ['body'],
+    isLength: {
+      options: { min: 12, max: 200 },
+      errorMessage: 'Secret Question must be between 12 - 200 Chars.',
+      bail: true,
+    },
+  },
+  answer: {
+    in: ['body'],
+    isLength: {
+      options: { min: 10, max: 200 },
+      errorMessage: 'Secret Answer must be between 10 - 200 Chars.',
+      bail: true,
+    },
+  },
 });
 
 export default registerValidator;

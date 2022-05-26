@@ -138,6 +138,9 @@ export default function LoginForm(): JSX.Element {
               }
             />
           </Link>
+          <Link href={'/forgot'}>
+            <a className={'text-[16px] mt-3 text-white'}>Reset Password?</a>
+          </Link>
         </div>
       </form>
     </div>
