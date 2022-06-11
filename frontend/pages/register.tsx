@@ -1,6 +1,7 @@
 import RegisterForm from '../components/register';
+import checkAuth from '../components/hoc/checkAuth';
 
-export default function Register(): JSX.Element {
+function Register(): JSX.Element {
   return (
     <div className={'centerDiv'}>
       <style jsx>{`
@@ -17,3 +18,5 @@ export default function Register(): JSX.Element {
     </div>
   );
 }
+
+export default checkAuth(Register, {}, false, '/');

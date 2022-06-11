@@ -1,6 +1,7 @@
 import LoginForm from '../components/login';
+import checkAuth from '../components/hoc/checkAuth';
 
-export default function Login() {
+function Login() {
   return (
     <div className={'centerDiv'}>
       <style jsx>{`
@@ -17,3 +18,5 @@ export default function Login() {
     </div>
   );
 }
+
+export default checkAuth(Login, {}, false, '/');

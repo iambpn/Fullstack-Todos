@@ -88,8 +88,8 @@ userSchema.methods.verifyAnswer = async function (answer: string) {
   }
 };
 
-const UserModel = mongoose.model<IUser, UserModel, InstanceMethods>(
+const User = mongoose.model<IUser, UserModel, InstanceMethods>(
   'User',
   userSchema
 );
-export default UserModel;
+export default User;

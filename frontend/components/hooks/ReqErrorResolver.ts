@@ -15,27 +15,34 @@ type returnType =
 
 export default function ReqErrorResolver() {
   const resolver = (e: any, inputNames: String[]): returnType => {
-    let errors = e.response.data.errors;
+    try {
+      let errors = e.response.data.errors;
 
-    if (errors.type) {
+      if (errors.type) {
+        return {
+          type: 'server',
+          error: errors.msg,
+        };
+      } else {
+        let inpErrors: inpError[] = [];
+        for (let name of Object.keys(errors)) {
+          if (inputNames.includes(name)) {
+            inpErrors.push({
+              name,
+              msg: errors[name].msg,
+            });
+          }
+        }
+
+        return {
+          type: 'client',
+          error: inpErrors,
+        };
+      }
+    } catch {
       return {
         type: 'server',
-        error: errors.msg,
-      };
-    } else {
-      let inpErrors: inpError[] = [];
-      for (let name of Object.keys(errors)) {
-        if (inputNames.includes(name)) {
-          inpErrors.push({
-            name,
-            msg: errors[name].msg,
-          });
-        }
-      }
-
-      return {
-        type: 'client',
-        error: inpErrors,
+        error: 'Something went wrong.',
       };
     }
   };

@@ -1,3 +1,7 @@
 export default function Sidebar() {
-  return <>sidebar</>;
+  return (
+    <>
+      <div className={'border border-solid w-full h-full'}></div>
+    </>
+  );
 }

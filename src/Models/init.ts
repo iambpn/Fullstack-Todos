@@ -1,5 +1,4 @@
 import mongoose, { Types } from 'mongoose';
-import { IUser } from './user';
 
 export async function initialize_DB() {
   try {

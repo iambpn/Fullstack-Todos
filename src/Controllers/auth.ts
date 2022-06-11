@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import UserModel, { IUser } from '../Models/user';
+import User, { IUser } from '../Models/user';
 import { createToken, getRefreshToken } from '../Helpers/tokenHelper';
-import { Schema, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import RefreshToken from '../Models/refreshToken';
 import jwtDecode from 'jwt-decode';
 import { ID_Wrapper } from '../Models/init';
@@ -30,7 +30,7 @@ async function authenticate(req: Request, res: Response) {
     const password = req.body.password;
 
     // validate user
-    let user = await UserModel.findOne({ email: username }).exec();
+    let user = await User.findOne({ email: username }).exec();
     if (!user) {
       return res
         .status(404)
@@ -52,9 +52,9 @@ async function authenticate(req: Request, res: Response) {
 
     await saveRefreshToken(refreshToken, user._id);
 
-    let decodeToken = jwtDecode<Partial<ID_Wrapper<IUser>> & { exp: string }>(
-      token
-    );
+    let decodeToken = jwtDecode<
+      Partial<ID_Wrapper<IUser>> & { exp: string; id: string }
+    >(token);
 
     // save refreshToken to cookie
     res.cookie('refreshToken', refreshToken, { httpOnly: true });
@@ -94,7 +94,7 @@ async function register(req: Request, res: Response) {
       secretQuestion: req.body.question,
     };
 
-    let foundUser = await UserModel.findOne({
+    let foundUser = await User.findOne({
       $or: [{ email: userInfo.email }, { phone_number: userInfo.phone_number }],
     }).exec();
 
@@ -116,7 +116,7 @@ async function register(req: Request, res: Response) {
       });
     }
 
-    let newUser = new UserModel(userInfo);
+    let newUser = new User(userInfo);
     await newUser.save();
 
     res.status(201).json({
@@ -132,7 +132,7 @@ async function register(req: Request, res: Response) {
 
 async function getQuestion(req: Request, res: Response) {
   const key = req.params.key;
-  let foundUser = await UserModel.findOne({
+  let foundUser = await User.findOne({
     $or: [
       { email: key },
       { phone_number: isNaN(Number(key)) ? 0 : Number(key) },
@@ -150,7 +150,7 @@ async function resetPassword(req: Request, res: Response) {
   const key = req.params.key;
   const password = req.body.new_password;
   const answer = req.body.answer;
-  let foundUser = await UserModel.findOne({
+  let foundUser = await User.findOne({
     $or: [
       { email: key },
       { phone_number: isNaN(Number(key)) ? 0 : Number(key) },
@@ -177,4 +177,32 @@ async function resetPassword(req: Request, res: Response) {
   return res.json({ msg: 'success' });
 }
 
-export { authenticate, register, getQuestion, resetPassword };
+async function refreshToken(req: Request, res: Response) {
+  try {
+    const refreshToken = req.cookies;
+    if (!refreshToken) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const userFromToken = await RefreshToken.findOne({
+      refreshToken: req.cookies.refreshToken,
+    }).select('user');
+    if (!userFromToken) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const user = await User.findOne({
+      _id: userFromToken.user,
+    });
+    if (!user) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const token = createToken(user);
+    return res.json({ token });
+  } catch (e) {
+    return res.status(400).json({ message: 'something went wrong' });
+  }
+}
+
+export { authenticate, register, getQuestion, resetPassword, refreshToken };

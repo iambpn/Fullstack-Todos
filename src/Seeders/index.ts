@@ -1,5 +1,7 @@
 import seedUser from './UserSeed';
+import seedTodo from './TodoSeed';
 
-export default function SeedInit() {
-  seedUser();
+export default async function SeedInit() {
+  await seedUser();
+  await seedTodo();
 }

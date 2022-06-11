@@ -92,6 +92,7 @@ export function AuthProvider({ children }: IAuthProviderProps): JSX.Element {
     return accessToken ? accessToken : undefined;
   };
 
+  // used in fetch context
   const getNewTokenForRequest = async (error: any) => {
     const { data } = await publicFetch.get('/token/refresh');
     error.response.config.headers['Authorization'] = `Bearer ${data.token}`;

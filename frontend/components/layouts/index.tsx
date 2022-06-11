@@ -8,8 +8,8 @@ type props = {
 export default function Layout({ children }: props) {
   return (
     <>
-      <div className={'flex'}>
-        <div className={'basis-[30%]'}>
+      <div className={'flex h-[calc(100vh-70px)]'}>
+        <div className={'basis-[25%]'}>
           <Sidebar />
         </div>
         <div className={'basis-auto grow'}>{children}</div>

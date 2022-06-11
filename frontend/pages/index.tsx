@@ -1,13 +1,24 @@
 import type { NextPage } from 'next';
-import Header from '../components/layouts/Header';
-import Sidebar from '../components/layouts/Sidebar';
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Layout from '../components/layouts';
+import { AuthContext } from '../store/AuthContext';
+import Todos from '../components/todos';
 
 const Home: NextPage = () => {
+  const auth = useContext(AuthContext);
+  const isAuthenticated = auth.isAuthenticated();
   return (
     <>
-      <Layout>index</Layout>
+      {!isAuthenticated && (
+        <div className={'flex justify-center py-[5rem] text-[40px] font-bold'}>
+          Welcome to Todos.
+        </div>
+      )}
+      {isAuthenticated && (
+        <Layout>
+          <Todos />
+        </Layout>
+      )}
     </>
   );
 };

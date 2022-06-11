@@ -1,6 +1,12 @@
 import ForgotPasswordForm from '../components/frogot';
+import { GetStaticPropsContext, GetStaticPropsResult } from 'next';
+import checkAuth from '../components/hoc/checkAuth';
 
-export default function forgot(): JSX.Element {
+type Props = {
+  data: string;
+};
+
+function Forgot(props: Props): JSX.Element {
   return (
     <div className={'centerDiv'}>
       <style jsx>{`
@@ -8,7 +14,6 @@ export default function forgot(): JSX.Element {
           position: absolute;
           left: 50%;
           top: 50%;
-          -webkit-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
         }
       `}</style>
@@ -17,3 +22,15 @@ export default function forgot(): JSX.Element {
     </div>
   );
 }
+
+export function getStaticProps(
+  context: GetStaticPropsContext
+): GetStaticPropsResult<Props> {
+  return {
+    props: {
+      data: '',
+    },
+  };
+}
+
+export default checkAuth<Props>(Forgot, { data: '' }, false, '/');

@@ -1,21 +1,27 @@
+import * as path from 'path';
 import * as dotEnv from 'dotenv';
+
+dotEnv.config({ path: `${path.join(process.cwd(), '.env')}` });
+
 import express, { NextFunction, Request, Response } from 'express';
 import routes from './src/Routes';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import * as path from 'path';
 import SeedInit from './src/Seeders/index';
 
 import { initialize_DB } from './src/Models/init';
+// import { IUser } from './src/Models/user';
 
-declare namespace Express {
-  export interface Request {
-    user?: string;
+declare global {
+  namespace Express {
+    export interface Request {
+      // user?: Partial<IUser>;
+      userId: string;
+    }
   }
 }
 
 async function connect() {
-  dotEnv.config({ path: `${path.join(process.cwd(), '.env')}` });
   const app = express();
 
   app.use(cors());
@@ -28,7 +34,7 @@ async function connect() {
   await initialize_DB();
 
   //seed users
-  SeedInit();
+  await SeedInit();
 
   app.use('/api', routes);
 
