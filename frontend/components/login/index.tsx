@@ -6,6 +6,7 @@ import { AuthContext, IUser } from '../../store/AuthContext';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import ReqErrorResolver from '../hooks/ReqErrorResolver';
+import { TodoContext } from '../../store/TodoContext';
 
 type LoginResponse = {
   expiresAt: number;
@@ -31,6 +32,7 @@ type IFormData = yup.InferType<typeof schema>;
 export default function LoginForm(): JSX.Element {
   const fetch = useContext(FetchContext);
   const auth = useContext(AuthContext);
+  const todoContext = useContext(TodoContext);
   const { resolver: errResolver } = ReqErrorResolver();
   const [serverErr, setServerErr] = useState('');
 
@@ -64,6 +66,7 @@ export default function LoginForm(): JSX.Element {
         expiresAt: String(res?.data.expiresAt) || undefined,
         token: res?.data.token,
       });
+      await todoContext.fetchTodos();
     } catch (e: any) {
       let errors = errResolver(e, ['username', 'passwords']);
       if (errors.type === 'client') {

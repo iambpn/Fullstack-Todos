@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import * as yup from 'yup';
 import ReqErrorResolver from '../hooks/ReqErrorResolver';
-import { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FetchContext } from '../../store/FetchContext';
@@ -9,7 +9,7 @@ import { Todo, TodoContext } from '../../store/TodoContext';
 
 type FormResponse = {
   msg: string;
-  todo: Todo;
+  data: Todo;
 };
 
 // schema validation
@@ -32,6 +32,7 @@ export default function Todos(): JSX.Element {
     register,
     formState: { errors, isSubmitting },
     setError,
+    setValue,
   } = useForm<IFormData>({
     mode: 'all',
     resolver: yupResolver(schema),
@@ -45,17 +46,42 @@ export default function Todos(): JSX.Element {
     }
   }, [serverErr]);
 
+  useEffect(() => {
+    const selectedTodo = !todoCtx.selectedItem
+      ? undefined
+      : todoCtx.todos.find((todo) => todo._id === todoCtx.selectedItem);
+    setValue('title', selectedTodo ? selectedTodo.title : '');
+    setValue('description', selectedTodo ? selectedTodo.description : '');
+  }, [todoCtx.selectedItem]);
+
   const onSubmitHandler: SubmitHandler<IFormData> = async (data) => {
     try {
-      let res = await fetch?.authAxios.post<FormResponse>('/todo', {
-        title: data.title,
-        description: data.description,
-      });
-      if (!res) {
-        console.log('Response is undefined.');
-        throw new Error('Response is undefined.');
+      if (!todoCtx.selectedItem) {
+        let res = await fetch?.authAxios.post<FormResponse>('/todo', {
+          title: data.title,
+          description: data.description,
+        });
+        if (!res) {
+          throw new Error('Response is undefined.');
+        }
+        todoCtx.addTodo(res.data.data);
+      } else {
+        let res = await fetch?.authAxios.put<FormResponse>(
+          `/todo/${todoCtx.selectedItem}`,
+          {
+            title: data.title,
+            description: data.description,
+          }
+        );
+        if (!res) {
+          throw new Error('Response is undefined.');
+        }
+        todoCtx.updateTodo(res.data.data);
       }
-      todoCtx.addTodo(res.data.todo);
+      // clean up
+      todoCtx.setSelectedItem(undefined);
+      setValue('title', '');
+      setValue('description', '');
     } catch (e: any) {
       let errors = errResolver(e, ['username', 'passwords']);
       if (errors.type === 'client') {
@@ -65,6 +91,28 @@ export default function Todos(): JSX.Element {
       } else {
         setServerErr(errors.error);
       }
+    }
+  };
+
+  const onDeleteHandler = async (
+    e: React.MouseEvent<HTMLInputElement, MouseEvent>
+  ) => {
+    try {
+      let res = await fetch?.authAxios.delete<FormResponse>(
+        `/todo/${todoCtx.selectedItem}`
+      );
+      if (!res) {
+        throw new Error('Response is undefined.');
+      }
+      todoCtx.deleteTodo(res.data.data);
+
+      //clean up
+      todoCtx.setSelectedItem(undefined);
+      setValue('title', '');
+      setValue('description', '');
+    } catch (e: any) {
+      console.log(e.response);
+      setServerErr('Error while deleting.');
     }
   };
 
@@ -105,23 +153,41 @@ export default function Todos(): JSX.Element {
           {errors.description?.message}
         </span>
       </div>
-      <div className={'flex justify-end w-2/3'}>
-        <input
-          type='button'
-          value='Clear'
-          className={
-            'rounded h-[35px] bg-red-400 border-red-400 text-[16px] text-white w-[100px] ml-2'
-          }
-          disabled={isSubmitting}
-        />
-        <input
-          type='submit'
-          value='Add'
-          className={
-            'rounded h-[35px] bg-green-400 border-green-400 text-[16px] text-white mb-2 w-[100px] ml-2'
-          }
-          disabled={isSubmitting}
-        />
+      <div className={'flex justify-between w-2/3'}>
+        <div>
+          {todoCtx.selectedItem && (
+            <input
+              type='button'
+              value={'Delete'}
+              className={
+                'rounded h-[35px] bg-red-400 border-red-400 text-[16px] text-white mb-2 w-[100px] ml-2'
+              }
+              disabled={isSubmitting}
+              onClick={onDeleteHandler}
+            />
+          )}
+        </div>
+        <div className={'justify-end'}>
+          <input
+            type='button'
+            value='Clear'
+            className={
+              'rounded h-[35px] bg-red-400 border-red-400 text-[16px] text-white w-[100px] ml-2'
+            }
+            disabled={isSubmitting}
+            onClick={() => {
+              todoCtx.setSelectedItem(undefined);
+            }}
+          />
+          <input
+            type='submit'
+            value={todoCtx.selectedItem ? 'Save' : 'Add'}
+            className={
+              'rounded h-[35px] bg-green-400 border-green-400 text-[16px] text-white mb-2 w-[100px] ml-2'
+            }
+            disabled={isSubmitting}
+          />
+        </div>
       </div>
     </form>
   );
