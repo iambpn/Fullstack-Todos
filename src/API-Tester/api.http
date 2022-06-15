@@ -1,0 +1,45 @@
+### Login
+POST localhost:8080/api/login
+Content-Type: application/json
+
+{
+  "username": "admin@gmail.com",
+  "password": "123@Admin"
+}
+
+> {%
+    client.global.set("auth_token", response.body.token);
+    client.log("Auth_token: " + client.global.get("auth_token"));
+%}
+
+### Get all Todos
+GET localhost:8080/api/todo?page=1&limit=10
+Authorization: Bearer {{ auth_token }}
+
+### Get todo by id
+GET localhost:8080/api/todo/62a47f95baeefb495809cc4c
+Authorization: Bearer {{ auth_token }}
+
+### Create todo
+POST localhost:8080/api/todo
+Authorization: Bearer {{ auth_token }}
+Content-Type: application/json
+
+{
+  "title": "Test title 1",
+  "description": "Test description 1"
+}
+
+### Update todo
+PUT localhost:8080/api/todo/62a47f95baeefb495809cc4c
+Authorization: Bearer {{ auth_token }}
+Content-Type: application/json
+
+{
+  "title": "first titleee",
+  "description": "first description"
+}
+
+### Remove todo
+DELETE localhost:8080/api/todo/62a9862e7625b131288d1854
+Authorization: Bearer {{auth_token}}

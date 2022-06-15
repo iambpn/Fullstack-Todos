@@ -36,8 +36,10 @@ const requireAuth = expressjwt({
 // add routes that is publicly accessible.
 routes.use(auth_router);
 
-// add routes that require Auth
+// adding auth guard.
 routes.use(requireAuth, attachUser);
+
+// add routes that require Auth
 routes.use('/todo', todo_router);
 
 export default routes;

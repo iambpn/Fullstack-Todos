@@ -1,19 +1,20 @@
 import { Router } from 'express';
+import { create, findAll, findById, remove, update } from '../Controllers/todo';
+import paginationValidation from '../Validators/todo/pagination';
+import findByIdValidation from '../Validators/todo/findById';
+import createTodo from '../Validators/todo/createTodo';
+import createTodoValidation from '../Validators/todo/createTodo';
 
 const todo_router = Router();
 
-//todo: implement methods
-todo_router.get('/', () => {
-  console.log('get');
-});
-todo_router.post('/', () => {
-  console.log('post');
-});
-todo_router.put('/', () => {
-  console.log('put');
-});
-todo_router.delete('/', () => {
-  console.log('delete');
-});
+todo_router.get('/:id', findByIdValidation, findById);
+
+todo_router.get('/', paginationValidation, findAll);
+
+todo_router.post('/', createTodoValidation, create);
+
+todo_router.put('/:id', findByIdValidation, createTodoValidation, update);
+
+todo_router.delete('/:id', findByIdValidation, remove);
 
 export default todo_router;
